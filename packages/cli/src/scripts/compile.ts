@@ -34,10 +34,9 @@ function replacePrivateKeyInFile(envFile: string, privateKey: string) {
   const envData = fs.readFileSync(envFile, 'utf-8').trim();
 
   let envVariables = envData.split('\n');
-  envVariables = envVariables.map(variable => {
-    let [key] = variable.split('=');
-    if (key === 'PRIVATE_KEY')
-      return key + '=' + privateKey;
+  envVariables = envVariables.map((variable) => {
+    const [key] = variable.split('=');
+    if (key === 'PRIVATE_KEY') return key + '=' + privateKey;
     else return variable;
   });
   fs.writeFileSync(envFile, envVariables.join('\n'));
@@ -145,7 +144,8 @@ async function buildProgram(programName: string) {
     const networkConfig = aleoConfig.networks[defaultNetwork];
     if (networkConfig?.accounts && networkConfig.accounts.length > 0) {
       const privateKey = networkConfig.accounts[0];
-      if (!privateKey) throw new Error('Invalid private key, check aleo-config.js ...');
+      if (!privateKey)
+        throw new Error('Invalid private key, check aleo-config.js ...');
       replacePrivateKeyInFile(`${programDir}/.env`, privateKey);
     }
   }

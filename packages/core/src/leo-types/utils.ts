@@ -98,7 +98,7 @@ const broadcastTransaction = async (
   endpoint: string
 ) => {
   try {
-    return await post(`${endpoint}/testnet3/transaction/broadcast`, {
+    return await post(`${endpoint}/transaction/broadcast`, {
       body: JSON.stringify(transaction),
       headers: {
         'Content-Type': 'application/json'
@@ -118,14 +118,15 @@ export const snarkExecute = async ({
   params = [],
   transition = 'main'
 }: LeoRunParams): Promise<ZkExecutionOutput> => {
-  const nodeEndPoint = config['network']?.endpoint;
+  const queryEndpoint = config['network']?.endpoint;
+  const nodeEndPoint = `${queryEndpoint}/${config.networkName}`;
   if (!nodeEndPoint) {
     throw new Error('networkName missing in contract config for deployment');
   }
   const stringedParams = params.map((s) => `"${s}"`).join(' ');
   // snarkos developer execute sample_program.aleo main  "1u32" "2u32" --private-key APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH --query "http://localhost:3030" --broadcast "http://localhost:3030/testnet3/transaction/broadcast"
   // const cmd = `cd ${config.contractPath} && snarkos developer execute  ${config.appName}.aleo ${transition} ${stringedParams} --private-key ${config.privateKey} --query ${nodeEndPoint} --broadcast "${nodeEndPoint}/testnet3/transaction/broadcast"`;
-  const cmd = `cd ${config.contractPath} && snarkos developer execute ${config.appName}.aleo ${transition} ${stringedParams} --private-key ${config.privateKey} --query ${nodeEndPoint} --dry-run`;
+  const cmd = `cd ${config.contractPath} && snarkos developer execute ${config.appName}.aleo ${transition} ${stringedParams} --private-key ${config.privateKey} --query ${queryEndpoint} --dry-run`;
   console.log(cmd);
   //const cmd = `cd ${config.contractPath} && snarkos developer execute ${config.appName}.aleo ${transition} ${stringedParams} --private-key ${config.privateKey} --query ${nodeEndPoint} --broadcast "${nodeEndPoint}/testnet3/transaction/broadcast"`;
   const { stdout } = await execute(cmd);
@@ -240,7 +241,7 @@ const validateBroadcast = async (
   transactionId: string,
   nodeEndpoint: string
 ) => {
-  const pollUrl = `${nodeEndpoint}/testnet3/transaction/${transactionId}`;
+  const pollUrl = `${nodeEndpoint}/transaction/${transactionId}`;
   const timeoutMs = 60_000;
   const pollInterval = 1000; // 1 second
   const startTime = Date.now();
@@ -284,9 +285,10 @@ export const snarkDeploy = async ({
   }
 
   const priorityFee = config.priorityFee || 0;
+  const apiPrefix = config.networkName === 'testnet3' ? 'testnet3' : 'mainnet';
 
   const isProgramDeployed = await checkDeployment(
-    `${nodeEndPoint}/testnet3/program/${config.appName}.aleo`
+    `${nodeEndPoint}/${apiPrefix}/program/${config.appName}.aleo`
   );
 
   if (isProgramDeployed) {
@@ -298,7 +300,7 @@ export const snarkDeploy = async ({
   const cmd = `cd ${config.contractPath}/build && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --query ${nodeEndPoint} --dry-run`;
   const { stdout } = await execute(cmd);
   const transaction = parseTransactionFromStdout(stdout);
-  await broadcastTransaction(transaction, nodeEndPoint);
+  await broadcastTransaction(transaction, `${nodeEndPoint}/${apiPrefix}`);
   return transaction;
 };
 

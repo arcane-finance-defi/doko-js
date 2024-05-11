@@ -22,7 +22,6 @@ export const isLinux = () => {
   return os.platform() === 'linux';
 };
 
-
 export class Shell {
   private command: string;
   private shell: string;
@@ -39,10 +38,11 @@ export class Shell {
 
   public async asyncExec() {
     return new Promise((res, rej) => {
-      const shellProcess = spawn(this.shell, [
-        '-c',
-        `FORCE_COLOR=true ${this.command}`
-      ]);
+      const shellProcess = spawn(
+        this.shell,
+        ['-c', `FORCE_COLOR=true ${this.command}`],
+        {}
+      );
       this.rl.on('line', (input: any) => {
         shellProcess.stdin.write(input + '\n');
       });
