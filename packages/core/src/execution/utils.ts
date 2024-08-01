@@ -139,7 +139,10 @@ async function deployAleo(
   );
   const priorityFee = config.priorityFee || 0;
 
-  const cmd = `cd ${projectDir} && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --query ${nodeEndPoint} --dry-run`;
+  const network =
+    config.networkMode || (config.networkName === 'mainnet' ? 0 : 1);
+
+  const cmd = `cd ${projectDir} && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --query ${nodeEndPoint} --network ${network} --dry-run`;
   const { stdout } = await execute(cmd);
   const result = new SnarkStdoutResponseParser().parse(stdout);
   await broadcastTransaction(
@@ -191,8 +194,11 @@ export const snarkDeploy = async ({
 
   console.log(`Deploying program ${config.appName}`);
 
+  const network =
+    config.networkMode || (config.networkName === 'mainnet' ? 0 : 1);
+
   // const cmd = `cd ${config.contractPath}/build && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --network ${config.networkMode} --query ${nodeEndPoint} --dry-run`;
-  const cmd = `cd ${config.contractPath}/build && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --query ${nodeEndPoint} --dry-run`;
+  const cmd = `cd ${config.contractPath}/build && snarkos developer deploy "${config.appName}.aleo" --path . --priority-fee ${priorityFee}  --private-key ${config.privateKey} --query ${nodeEndPoint} --network ${network} --dry-run`;
   const { stdout } = await execute(cmd);
   const result = new SnarkStdoutResponseParser().parse(stdout);
   // @TODO check it later

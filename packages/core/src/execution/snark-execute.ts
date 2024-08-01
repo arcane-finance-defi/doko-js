@@ -44,6 +44,10 @@ export class SnarkExecuteContext implements ExecutionContext {
       throw new Error('networkName missing in contract config for deployment');
     }
 
+    const network =
+      this.params.networkMode ||
+      (this.params.networkName === 'mainnet' ? 0 : 1);
+
     const programName = this.params.appName + '.aleo';
     const transitionArgs = formatArgs(args);
     const cdCmd = this.params.isImportedAleo
@@ -52,7 +56,7 @@ export class SnarkExecuteContext implements ExecutionContext {
     // snarkos developer execute sample_program.aleo main  "1u32" "2u32" --private-key APrivateKey1zkp8CZNn3yeCseEtxuVPbDCwSyhGW6yZKUYKfgXmcpoGPWH --query "http://localhost:3030" --broadcast "http://localhost:3030/testnet3/transaction/broadcast"
     // const cmd = `cd ${config.contractPath} && snarkos developer execute  ${config.appName}.aleo ${transition} ${stringedParams} --private-key ${config.privateKey} --query ${nodeEndPoint} --broadcast "${nodeEndPoint}/testnet3/transaction/broadcast"`;
     // const cmd = `cd ${this.params.contractPath} && snarkos developer execute ${programName} ${transitionName} ${transitionArgs} --network ${this.params.networkMode} --private-key ${this.params.privateKey} --query ${nodeEndPoint} --dry-run`;
-    const cmd = `${cdCmd}snarkos developer execute ${programName} ${transitionName} ${transitionArgs} --private-key ${this.params.privateKey} --query ${nodeEndPoint} --dry-run`;
+    const cmd = `${cdCmd}snarkos developer execute ${programName} ${transitionName} ${transitionArgs} --private-key ${this.params.privateKey} --query ${nodeEndPoint} --network ${network} --dry-run`;
     console.log(cmd);
 
     const { stdout } = await execute(cmd);
