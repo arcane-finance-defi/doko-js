@@ -190,7 +190,7 @@ async function compilePrograms(projectRoot?: string) {
     const programPath = path.join(projectRoot, PROGRAM_DIRECTORY);
     const outputPath = path.join(projectRoot, GENERATE_FILE_OUT_DIR);
 
-    const contents = fs.readdirSync(programPath);
+    let contents = fs.readdirSync(programPath);
     const folders = contents.filter((name) =>
       fs.statSync(programPath + name).isDirectory()
     );
@@ -203,6 +203,22 @@ async function compilePrograms(projectRoot?: string) {
       if (ImportFileCaches.has(originalName)) continue;
 
       await parseProgram(programPath + program + '/');
+    }
+
+    const importsPath = path.join(projectRoot, IMPORTS_PATH);
+    contents = fs.readdirSync(importsPath);
+    const aleoFiles = contents.filter((name) =>
+      fs.statSync(path.join(importsPath, name)).isFile()
+    );
+
+    for (const program of aleoFiles) {
+      if (ImportFileCaches.has(program)) continue;
+
+      await parseAleo(
+        { programFile: path.join(importsPath, program) },
+        null,
+        true
+      );
     }
 
     //await GlobalIndexGenerator.generate(outputPath);
